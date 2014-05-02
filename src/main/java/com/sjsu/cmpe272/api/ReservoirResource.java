@@ -1,9 +1,12 @@
 package com.sjsu.cmpe272.api;
 
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.validation.Valid;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
@@ -23,14 +26,17 @@ import com.yammer.metrics.annotation.Timed;
 @Consumes(MediaType.APPLICATION_JSON)
 public class ReservoirResource {
 	private final JacksonDBCollection<Reservoir, String> reservoirs;
+	private final ReservoirRepositoryInterface reservoirRepository;
 	
 
 	/**
 	 * Reservoir resource
 	 * @param reservoirs
 	 */
-	public ReservoirResource(JacksonDBCollection<Reservoir, String> reservoirs) {
+	public ReservoirResource(JacksonDBCollection<Reservoir, String> reservoirs, 
+			ReservoirRepositoryInterface reservoirRepository) {
 		this.reservoirs = reservoirs;
+		this.reservoirRepository = reservoirRepository;
 	}
 	
 	/**
@@ -45,11 +51,22 @@ public class ReservoirResource {
         List<Reservoir> allReservoirs = reservoirFetcher.getAllReservoirs();
         for(int i=0; i<allReservoirs.size() ; i++)
         {
+        	
         	reservoirs.insert(allReservoirs.get(i));
         }
 		
         return Response.noContent().build();
 	}
 
+	@GET
+	@Timed(name="get")
+	public ConcurrentHashMap<String, Long> getPastthirty() throws ParseException
+	{
+		System.out.println("call the tmethod");
+		ConcurrentHashMap<String, Long> map = reservoirRepository.caPastThirtyDays();
+		System.out.println("Getting the hashmap");
+		return map;
+	}
+	
 
 }
